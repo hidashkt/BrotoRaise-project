@@ -8,17 +8,14 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AdminTools from "./pages/AdminTools";
 import NotFound from "./pages/NotFound";
-
 const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Loading />} />
+          
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin/tools" element={<AdminTools />} />
@@ -27,7 +24,5 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
-);
-
+  </QueryClientProvider>;
 export default App;
