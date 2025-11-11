@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ComplaintCard } from "@/components/ComplaintCard";
-import { LogOut, Filter } from "lucide-react";
+import { LogOut, Filter, Settings } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -133,10 +133,16 @@ const AdminDashboard = () => {
             <h1 className="text-2xl font-bold">BrotoRaise Admin</h1>
             <p className="text-sm text-muted-foreground">Manage all complaints</p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/admin/tools")}>
+              <Settings className="mr-2 h-4 w-4" />
+              Admin Tools
+            </Button>
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
