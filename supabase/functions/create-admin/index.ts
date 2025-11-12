@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    const { email, password } = await req.json()
+    const { email, password, update_existing } = await req.json()
 
     if (!email || !password) {
       return new Response(
@@ -34,7 +34,57 @@ Deno.serve(async (req) => {
       }
     )
 
-    // Create the user
+    // Check if user already exists
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
+    const existingUser = existingUsers.users.find(u => u.email === email)
+
+    let userId: string
+
+    if (existingUser && update_existing) {
+      // Update existing user's password
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        existingUser.id,
+        { password }
+      )
+
+      if (updateError) {
+        return new Response(
+          JSON.stringify({ error: updateError.message }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+
+      userId = existingUser.id
+
+      // Update role to admin if not already
+      const { error: roleError } = await supabaseAdmin
+        .from('user_roles')
+        .update({ role: 'admin' })
+        .eq('user_id', userId)
+
+      if (roleError) {
+        return new Response(
+          JSON.stringify({ error: roleError.message }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Admin user updated successfully',
+          user_id: userId 
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    } else if (existingUser) {
+      return new Response(
+        JSON.stringify({ error: 'User already exists. Set update_existing=true to update.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Create new user
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
