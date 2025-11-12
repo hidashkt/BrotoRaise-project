@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "./StatusBadge";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface ComplaintCardProps {
   complaint: {
@@ -13,6 +15,9 @@ interface ComplaintCardProps {
     resolution_details?: string;
   };
   onClick?: () => void;
+  onEdit?: (complaint: any) => void;
+  onDelete?: (id: string) => void;
+  showActions?: boolean;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -26,7 +31,18 @@ const categoryLabels: Record<string, string> = {
   other: "Other",
 };
 
-export const ComplaintCard = ({ complaint, onClick }: ComplaintCardProps) => {
+export const ComplaintCard = ({ 
+  complaint, 
+  onClick, 
+  onEdit, 
+  onDelete, 
+  showActions = false 
+}: ComplaintCardProps) => {
+  const handleAction = (e: React.MouseEvent, action: () => void) => {
+    e.stopPropagation();
+    action();
+  };
+
   return (
     <Card 
       className="hover:shadow-lg transition-shadow cursor-pointer"
@@ -38,7 +54,29 @@ export const ComplaintCard = ({ complaint, onClick }: ComplaintCardProps) => {
             <CardTitle className="text-lg mb-2">{complaint.title}</CardTitle>
             <CardDescription>{categoryLabels[complaint.category]}</CardDescription>
           </div>
-          <StatusBadge status={complaint.status} />
+          <div className="flex items-center gap-2">
+            <StatusBadge status={complaint.status} />
+            {showActions && complaint.status === 'open' && (
+              <div className="flex gap-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8"
+                  onClick={(e) => handleAction(e, () => onEdit?.(complaint))}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  onClick={(e) => handleAction(e, () => onDelete?.(complaint.id))}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>

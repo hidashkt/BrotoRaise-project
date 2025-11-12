@@ -13,6 +13,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StarRating } from "@/components/StarRating";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -30,6 +41,11 @@ const StudentDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState("");
+  const [editingComplaint, setEditingComplaint] = useState<any>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [feedbackComplaint, setFeedbackComplaint] = useState<any>(null);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState("");
 
   useEffect(() => {
     checkAuth();
@@ -85,21 +101,88 @@ const StudentDashboard = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { error } = await supabase.from("complaints").insert({
-        student_id: session.user.id,
-        title: formData.get("title") as string,
-        description: formData.get("description") as string,
-        category: formData.get("category") as any,
-      });
+      if (editingComplaint) {
+        const { error } = await supabase
+          .from("complaints")
+          .update({
+            title: formData.get("title") as string,
+            description: formData.get("description") as string,
+            category: formData.get("category") as any,
+          })
+          .eq("id", editingComplaint.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Complaint updated successfully!");
+      } else {
+        const { error } = await supabase.from("complaints").insert({
+          student_id: session.user.id,
+          title: formData.get("title") as string,
+          description: formData.get("description") as string,
+          category: formData.get("category") as any,
+        });
 
-      toast.success("Complaint submitted successfully!");
+        if (error) throw error;
+        toast.success("Complaint submitted successfully!");
+      }
+
       setIsOpen(false);
+      setEditingComplaint(null);
       fetchComplaints();
     } catch (error: any) {
       toast.error(error.message);
     }
+  };
+
+  const handleEditComplaint = (complaint: any) => {
+    setEditingComplaint(complaint);
+    setIsOpen(true);
+  };
+
+  const handleDeleteComplaint = async () => {
+    if (!deletingId) return;
+
+    try {
+      const { error } = await supabase
+        .from("complaints")
+        .delete()
+        .eq("id", deletingId);
+
+      if (error) throw error;
+      toast.success("Complaint deleted successfully!");
+      fetchComplaints();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackComplaint || feedbackRating === 0) {
+      toast.error("Please provide a rating");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("feedback").insert({
+        complaint_id: feedbackComplaint.id,
+        rating: feedbackRating,
+        comment: feedbackComment,
+      });
+
+      if (error) throw error;
+      toast.success("Feedback submitted successfully!");
+      setFeedbackComplaint(null);
+      setFeedbackRating(0);
+      setFeedbackComment("");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleOpenDialog = () => {
+    setEditingComplaint(null);
+    setIsOpen(true);
   };
 
   return (
@@ -123,18 +206,25 @@ const StudentDashboard = () => {
             <h2 className="text-3xl font-bold mb-2">My Complaints</h2>
             <p className="text-muted-foreground">Track and manage your submitted complaints</p>
           </div>
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <Dialog open={isOpen} onOpenChange={(open) => {
+            setIsOpen(open);
+            if (!open) setEditingComplaint(null);
+          }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={handleOpenDialog}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 New Complaint
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Submit a New Complaint</DialogTitle>
+                <DialogTitle>
+                  {editingComplaint ? "Edit Complaint" : "Submit a New Complaint"}
+                </DialogTitle>
                 <DialogDescription>
-                  Describe your issue in detail to help us resolve it quickly
+                  {editingComplaint 
+                    ? "Update your complaint details" 
+                    : "Describe your issue in detail to help us resolve it quickly"}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmitComplaint} className="space-y-4">
@@ -143,13 +233,14 @@ const StudentDashboard = () => {
                   <Input
                     id="title"
                     name="title"
+                    defaultValue={editingComplaint?.title}
                     placeholder="Brief description of the issue"
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select name="category" required>
+                  <Select name="category" defaultValue={editingComplaint?.category} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
@@ -170,16 +261,22 @@ const StudentDashboard = () => {
                   <Textarea
                     id="description"
                     name="description"
+                    defaultValue={editingComplaint?.description}
                     placeholder="Provide detailed information about your issue"
                     rows={5}
                     required
                   />
                 </div>
                 <div className="flex gap-3 justify-end">
-                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => {
+                    setIsOpen(false);
+                    setEditingComplaint(null);
+                  }}>
                     Cancel
                   </Button>
-                  <Button type="submit">Submit Complaint</Button>
+                  <Button type="submit">
+                    {editingComplaint ? "Update" : "Submit"} Complaint
+                  </Button>
                 </div>
               </form>
             </DialogContent>
@@ -201,10 +298,85 @@ const StudentDashboard = () => {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {complaints.map((complaint) => (
-              <ComplaintCard key={complaint.id} complaint={complaint} />
+              <ComplaintCard 
+                key={complaint.id} 
+                complaint={complaint}
+                showActions={true}
+                onEdit={handleEditComplaint}
+                onDelete={(id) => setDeletingId(id)}
+                onClick={() => {
+                  if (complaint.status === 'resolved') {
+                    setFeedbackComplaint(complaint);
+                  }
+                }}
+              />
             ))}
           </div>
         )}
+
+        <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Complaint</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this complaint? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteComplaint} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <Dialog open={!!feedbackComplaint} onOpenChange={() => {
+          setFeedbackComplaint(null);
+          setFeedbackRating(0);
+          setFeedbackComment("");
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Submit Feedback</DialogTitle>
+              <DialogDescription>
+                Rate your experience with the resolution of: {feedbackComplaint?.title}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Rating</Label>
+                <StarRating 
+                  rating={feedbackRating} 
+                  onRatingChange={setFeedbackRating}
+                  size="lg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="feedback-comment">Comment (optional)</Label>
+                <Textarea
+                  id="feedback-comment"
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  placeholder="Share your thoughts about the resolution..."
+                  rows={4}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => {
+                setFeedbackComplaint(null);
+                setFeedbackRating(0);
+                setFeedbackComment("");
+              }}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmitFeedback}>
+                Submit Feedback
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
