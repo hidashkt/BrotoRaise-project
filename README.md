@@ -1,3 +1,9 @@
+email for admin:niyas@brototype.com
+password for admin:bro123
+
+email for student:hibahidash@brototype.com
+password for student:bro123
+
 # Welcome to your Lovable project
 
 ## Project info
