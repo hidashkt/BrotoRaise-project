@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StarRating } from "@/components/StarRating";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -222,10 +223,13 @@ const StudentDashboard = () => {
             <h1 className="text-2xl font-bold">BrotoRaise</h1>
             <p className="text-sm text-muted-foreground">Welcome, {userName}</p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
