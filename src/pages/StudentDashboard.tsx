@@ -46,6 +46,8 @@ const StudentDashboard = () => {
   const [feedbackComplaint, setFeedbackComplaint] = useState<any>(null);
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [feedbackComment, setFeedbackComment] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -98,17 +100,42 @@ const StudentDashboard = () => {
     const formData = new FormData(e.currentTarget);
 
     try {
+      setIsUploading(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
+
+      let fileUrl = editingComplaint?.file_url || null;
+
+      // Upload file if selected
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('complaint-attachments')
+          .upload(fileName, selectedFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('complaint-attachments')
+          .getPublicUrl(fileName);
+
+        fileUrl = publicUrl;
+      }
+
+      const complaintData = {
+        title: formData.get("title") as string,
+        description: formData.get("description") as string,
+        category: formData.get("category") as any,
+        source: formData.get("source") as string || null,
+        file_url: fileUrl,
+      };
 
       if (editingComplaint) {
         const { error } = await supabase
           .from("complaints")
-          .update({
-            title: formData.get("title") as string,
-            description: formData.get("description") as string,
-            category: formData.get("category") as any,
-          })
+          .update(complaintData)
           .eq("id", editingComplaint.id);
 
         if (error) throw error;
@@ -116,9 +143,7 @@ const StudentDashboard = () => {
       } else {
         const { error } = await supabase.from("complaints").insert({
           student_id: session.user.id,
-          title: formData.get("title") as string,
-          description: formData.get("description") as string,
-          category: formData.get("category") as any,
+          ...complaintData,
         });
 
         if (error) throw error;
@@ -127,14 +152,18 @@ const StudentDashboard = () => {
 
       setIsOpen(false);
       setEditingComplaint(null);
+      setSelectedFile(null);
       fetchComplaints();
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleEditComplaint = (complaint: any) => {
     setEditingComplaint(complaint);
+    setSelectedFile(null);
     setIsOpen(true);
   };
 
@@ -267,15 +296,42 @@ const StudentDashboard = () => {
                     required
                   />
                 </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="source">Source/Reference (Optional)</Label>
+                  <Input
+                    id="source"
+                    name="source"
+                    placeholder="e.g., Room number, department, URL"
+                    defaultValue={editingComplaint?.source || ""}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="file">Attachment (Optional)</Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    accept="image/*,.pdf,.doc,.docx"
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  />
+                  {editingComplaint?.file_url && !selectedFile && (
+                    <p className="text-sm text-muted-foreground">
+                      Current file attached
+                    </p>
+                  )}
+                </div>
+                
                 <div className="flex gap-3 justify-end">
                   <Button type="button" variant="outline" onClick={() => {
                     setIsOpen(false);
                     setEditingComplaint(null);
+                    setSelectedFile(null);
                   }}>
                     Cancel
                   </Button>
-                  <Button type="submit">
-                    {editingComplaint ? "Update" : "Submit"} Complaint
+                  <Button type="submit" disabled={isUploading}>
+                    {isUploading ? "Uploading..." : editingComplaint ? "Update" : "Submit"} Complaint
                   </Button>
                 </div>
               </form>

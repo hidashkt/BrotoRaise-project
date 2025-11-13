@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBadge } from "./StatusBadge";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Paperclip, ExternalLink } from "lucide-react";
 
 interface ComplaintCardProps {
   complaint: {
@@ -13,6 +13,8 @@ interface ComplaintCardProps {
     status: "open" | "in_progress" | "resolved" | "closed";
     created_at: string;
     resolution_details?: string;
+    file_url?: string | null;
+    source?: string | null;
   };
   onClick?: () => void;
   onEdit?: (complaint: any) => void;
@@ -83,6 +85,29 @@ export const ComplaintCard = ({
         <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
           {complaint.description}
         </p>
+        
+        {complaint.source && (
+          <div className="flex items-center gap-2 mb-2 text-sm">
+            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Source: {complaint.source}</span>
+          </div>
+        )}
+        
+        {complaint.file_url && (
+          <div className="mb-3">
+            <a 
+              href={complaint.file_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-primary hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Paperclip className="h-4 w-4" />
+              View Attachment
+            </a>
+          </div>
+        )}
+        
         {complaint.resolution_details && (
           <div className="mt-3 p-3 bg-success/5 border border-success/20 rounded-md">
             <p className="text-sm text-success-foreground">
