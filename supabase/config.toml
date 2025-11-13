@@ -2,3 +2,6 @@ project_id = "wydgrelbtokvazudvqxf"
 
 [functions.create-admin]
 verify_jwt = false
+
+[functions.cleanup-resolved-complaints]
+verify_jwt = false

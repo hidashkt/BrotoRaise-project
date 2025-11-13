@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -134,6 +135,7 @@ const AdminDashboard = () => {
             <p className="text-sm text-muted-foreground">Manage all complaints</p>
           </div>
           <div className="flex gap-2">
+            <ThemeToggle />
             <Button variant="outline" onClick={() => navigate("/admin/tools")}>
               <Settings className="mr-2 h-4 w-4" />
               Admin Tools
