@@ -35,6 +35,8 @@ import {
 } from "@/components/ui/select";
 import { StarRating } from "@/components/StarRating";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ChatInterface } from "@/components/ChatInterface";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -234,21 +236,28 @@ const StudentDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">My Complaints</h2>
-            <p className="text-muted-foreground">Track and manage your submitted complaints</p>
-          </div>
-          <Dialog open={isOpen} onOpenChange={(open) => {
-            setIsOpen(open);
-            if (!open) setEditingComplaint(null);
-          }}>
-            <DialogTrigger asChild>
-              <Button onClick={handleOpenDialog}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                New Complaint
-              </Button>
-            </DialogTrigger>
+        <Tabs defaultValue="complaints" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+            <TabsTrigger value="complaints">My Complaints</TabsTrigger>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="complaints">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-3xl font-bold mb-2">My Complaints</h2>
+                <p className="text-muted-foreground">Track and manage your submitted complaints</p>
+              </div>
+              <Dialog open={isOpen} onOpenChange={(open) => {
+                setIsOpen(open);
+                if (!open) setEditingComplaint(null);
+              }}>
+                <DialogTrigger asChild>
+                  <Button onClick={handleOpenDialog}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    New Complaint
+                  </Button>
+                </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
@@ -437,6 +446,14 @@ const StudentDashboard = () => {
             </div>
           </DialogContent>
         </Dialog>
+          </TabsContent>
+
+          <TabsContent value="chat">
+            <div className="max-w-4xl mx-auto">
+              <ChatInterface />
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

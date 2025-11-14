@@ -22,6 +22,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AdminChatInterface } from "@/components/AdminChatInterface";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -149,7 +151,14 @@ const AdminDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-4 md:grid-cols-4 mb-8">
+        <Tabs defaultValue="complaints" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+            <TabsTrigger value="complaints">Complaints</TabsTrigger>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="complaints">
+            <div className="grid gap-4 md:grid-cols-4 mb-8">
           <div className="bg-card p-6 rounded-lg border">
             <p className="text-sm text-muted-foreground mb-1">Total</p>
             <p className="text-3xl font-bold">{stats.total}</p>
@@ -223,7 +232,6 @@ const AdminDashboard = () => {
             ))}
           </div>
         )}
-      </main>
 
       <Dialog open={!!selectedComplaint} onOpenChange={() => setSelectedComplaint(null)}>
         <DialogContent className="max-w-2xl">
@@ -275,6 +283,13 @@ const AdminDashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+          </TabsContent>
+
+          <TabsContent value="chat">
+            <AdminChatInterface />
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };
