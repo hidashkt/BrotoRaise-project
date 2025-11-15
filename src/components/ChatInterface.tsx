@@ -14,6 +14,7 @@ interface Message {
   created_at: string;
   attachment_url: string | null;
   attachment_type: string | null;
+  admin_name?: string;
 }
 
 interface Complaint {
@@ -95,7 +96,23 @@ export const ChatInterface = ({ complaintId }: ChatInterfaceProps) => {
       return;
     }
 
-    setMessages(data || []);
+    // Fetch admin names for admin messages
+    const messagesWithNames = await Promise.all(
+      (data || []).map(async (msg) => {
+        if (msg.is_from_admin) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("id", msg.student_id)
+            .single();
+          
+          return { ...msg, admin_name: profile?.name || "Admin" };
+        }
+        return msg;
+      })
+    );
+
+    setMessages(messagesWithNames);
   };
 
   const subscribeToMessages = (complaintId: string) => {
@@ -366,8 +383,13 @@ export const ChatInterface = ({ complaintId }: ChatInterfaceProps) => {
                     messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`flex ${msg.is_from_admin ? "justify-start" : "justify-end"}`}
+                        className={`flex flex-col ${msg.is_from_admin ? "items-start" : "items-end"}`}
                       >
+                        {msg.is_from_admin && msg.admin_name && (
+                          <p className="text-xs text-muted-foreground mb-1 px-2">
+                            {msg.admin_name}
+                          </p>
+                        )}
                         <div
                           className={`max-w-[70%] rounded-lg px-4 py-2 ${
                             msg.is_from_admin

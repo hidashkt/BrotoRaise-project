@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AdminChatInterface } from "@/components/AdminChatInterface";
+import { FeedbackViewer } from "@/components/FeedbackViewer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboard = () => {
@@ -152,9 +153,10 @@ const AdminDashboard = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="complaints" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+          <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
             <TabsTrigger value="complaints">Complaints</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
 
           <TabsContent value="complaints">
@@ -285,10 +287,14 @@ const AdminDashboard = () => {
       </Dialog>
           </TabsContent>
 
-          <TabsContent value="chat">
-            <AdminChatInterface />
-          </TabsContent>
-        </Tabs>
+        <TabsContent value="chat">
+          <AdminChatInterface />
+        </TabsContent>
+
+        <TabsContent value="feedback">
+          <FeedbackViewer />
+        </TabsContent>
+      </Tabs>
       </main>
     </div>
   );
