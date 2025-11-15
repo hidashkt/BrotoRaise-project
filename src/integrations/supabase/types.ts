@@ -14,13 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          attachment_type: string | null
+          attachment_url: string | null
+          complaint_id: string | null
+          created_at: string
+          id: string
+          is_from_admin: boolean
+          message: string
+          student_id: string
+        }
+        Insert: {
+          attachment_type?: string | null
+          attachment_url?: string | null
+          complaint_id?: string | null
+          created_at?: string
+          id?: string
+          is_from_admin?: boolean
+          message: string
+          student_id: string
+        }
+        Update: {
+          attachment_type?: string | null
+          attachment_url?: string | null
+          complaint_id?: string | null
+          created_at?: string
+          id?: string
+          is_from_admin?: boolean
+          message?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       complaints: {
         Row: {
           category: Database["public"]["Enums"]["complaint_category"]
           created_at: string
           description: string
+          file_url: string | null
           id: string
           resolution_details: string | null
+          source: string | null
           status: Database["public"]["Enums"]["complaint_status"]
           student_id: string
           title: string
@@ -30,8 +73,10 @@ export type Database = {
           category: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
           description: string
+          file_url?: string | null
           id?: string
           resolution_details?: string | null
+          source?: string | null
           status?: Database["public"]["Enums"]["complaint_status"]
           student_id: string
           title: string
@@ -41,8 +86,10 @@ export type Database = {
           category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
           description?: string
+          file_url?: string | null
           id?: string
           resolution_details?: string | null
+          source?: string | null
           status?: Database["public"]["Enums"]["complaint_status"]
           student_id?: string
           title?: string
