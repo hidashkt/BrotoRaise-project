@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send, MessageCircle, Paperclip, Image, Video, Mic, FileText, X } from "lucide-react";
+import { Send, MessageCircle, Paperclip, Image, Video, Mic, FileText, X, Square } from "lucide-react";
 import { toast } from "sonner";
 
 interface Complaint {
@@ -35,8 +35,13 @@ export const AdminChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchComplaintsWithMessages();
@@ -130,6 +135,78 @@ export const AdminChatInterface = () => {
       fileInputRef.current.accept = accept;
       fileInputRef.current.click();
     }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioFile = new File([audioBlob], `voice-note-${Date.now()}.webm`, { type: 'audio/webm' });
+        setSelectedFile(audioFile);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+
+      toast.success("Recording started");
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      toast.error("Failed to start recording. Please check microphone permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+      toast.success("Recording stopped");
+    }
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+      audioChunksRef.current = [];
+      setRecordingTime(0);
+      
+      if (mediaRecorderRef.current.stream) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      }
+      
+      toast.info("Recording cancelled");
+    }
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const getAttachmentType = (file: File): string => {
@@ -314,7 +391,31 @@ export const AdminChatInterface = () => {
               </ScrollArea>
               
               <div className="border-t p-4">
-                {selectedFile && (
+                {isRecording && (
+                  <div className="mb-2 flex items-center gap-2 text-sm bg-destructive/10 p-3 rounded-lg animate-pulse">
+                    <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                    <span className="flex-1 font-medium">Recording... {formatRecordingTime(recordingTime)}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={cancelRecording}
+                      className="h-8"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={stopRecording}
+                      className="h-8"
+                    >
+                      <Square className="h-3 w-3 mr-1" />
+                      Stop
+                    </Button>
+                  </div>
+                )}
+
+                {selectedFile && !isRecording && (
                   <div className="mb-2 flex items-center gap-2 text-sm bg-muted p-2 rounded">
                     <Paperclip className="h-4 w-4" />
                     <span className="flex-1 truncate">{selectedFile.name}</span>
@@ -351,7 +452,7 @@ export const AdminChatInterface = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleFileSelect('image/*')}
-                      disabled={isLoading}
+                      disabled={isLoading || isRecording}
                       title="Send image"
                     >
                       <Image className="h-4 w-4" />
@@ -361,7 +462,7 @@ export const AdminChatInterface = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleFileSelect('video/*')}
-                      disabled={isLoading}
+                      disabled={isLoading || isRecording}
                       title="Send video"
                     >
                       <Video className="h-4 w-4" />
@@ -370,18 +471,8 @@ export const AdminChatInterface = () => {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleFileSelect('audio/*')}
-                      disabled={isLoading}
-                      title="Send audio"
-                    >
-                      <Mic className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
                       onClick={() => handleFileSelect('*')}
-                      disabled={isLoading}
+                      disabled={isLoading || isRecording}
                       title="Send document"
                     >
                       <FileText className="h-4 w-4" />
@@ -391,20 +482,37 @@ export const AdminChatInterface = () => {
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    disabled={isLoading}
+                    placeholder={isRecording ? "Recording..." : "Type your message..."}
+                    disabled={isLoading || isRecording}
                     className="flex-1"
                   />
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading || (!newMessage.trim() && !selectedFile)}
-                  >
-                    {isUploading ? (
-                      <span className="text-xs">Uploading...</span>
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
+                  
+                  {!isRecording && !selectedFile && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={startRecording}
+                      disabled={isLoading}
+                      title="Record voice note"
+                      className="text-primary"
+                    >
+                      <Mic className="h-5 w-5" />
+                    </Button>
+                  )}
+                  
+                  {(selectedFile || newMessage.trim()) && !isRecording && (
+                    <Button 
+                      type="submit" 
+                      disabled={isLoading || (!newMessage.trim() && !selectedFile)}
+                    >
+                      {isUploading ? (
+                        <span className="text-xs">Uploading...</span>
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
                 </form>
               </div>
             </>
