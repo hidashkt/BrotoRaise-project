@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ComplaintCard } from "@/components/ComplaintCard";
-import { PlusCircle, LogOut } from "lucide-react";
+import { PlusCircle, Settings } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -227,9 +227,9 @@ const StudentDashboard = () => {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+            <Button variant="outline" onClick={() => navigate("/settings")}>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
             </Button>
           </div>
         </div>

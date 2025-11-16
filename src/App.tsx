@@ -7,6 +7,8 @@ import Loading from "./pages/Loading";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AdminTools from "./pages/AdminTools";
+import StudentSettings from "./pages/StudentSettings";
+import AdminSettings from "./pages/AdminSettings";
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 const App = () => <QueryClientProvider client={queryClient}>
@@ -18,7 +20,9 @@ const App = () => <QueryClientProvider client={queryClient}>
           <Route path="/" element={<Loading />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/settings" element={<StudentSettings />} />
           <Route path="/admin/tools" element={<AdminTools />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
