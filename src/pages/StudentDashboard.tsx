@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/brototype-logo.webp";
 import { Button } from "@/components/ui/button";
 import { ComplaintCard } from "@/components/ComplaintCard";
 import { PlusCircle, Settings } from "lucide-react";
@@ -221,9 +222,12 @@ const StudentDashboard = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">BrotoRaise</h1>
-            <p className="text-sm text-muted-foreground">Welcome, {userName}</p>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Brototype" className="h-8" />
+            <div>
+              <h1 className="text-2xl font-bold">BrotoRaise</h1>
+              <p className="text-sm text-muted-foreground">Welcome, {userName}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />

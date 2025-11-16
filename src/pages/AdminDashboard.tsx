@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/brototype-logo.webp";
 import { Button } from "@/components/ui/button";
 import { ComplaintCard } from "@/components/ComplaintCard";
 import { Filter, Settings } from "lucide-react";
@@ -133,9 +134,12 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">BrotoRaise Admin</h1>
-            <p className="text-sm text-muted-foreground">Manage all complaints</p>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Brototype" className="h-8" />
+            <div>
+              <h1 className="text-2xl font-bold">BrotoRaise Admin</h1>
+              <p className="text-sm text-muted-foreground">Manage all complaints</p>
+            </div>
           </div>
           <div className="flex gap-2">
             <ThemeToggle />
