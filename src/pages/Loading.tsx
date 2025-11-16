@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "@/assets/brototype-logo.webp";
 
 const Loading = () => {
   const navigate = useNavigate();
@@ -24,7 +25,8 @@ const Loading = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
+      <div className="text-center space-y-8">
+        <img src={logo} alt="Brototype" className="h-16 mx-auto" />
         <div className="mb-8 text-8xl transition-all duration-500 animate-in fade-in zoom-in">
           {emojis[stage]}
         </div>

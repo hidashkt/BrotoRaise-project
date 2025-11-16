@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/brototype-logo.webp";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -102,6 +103,7 @@ const AdminSettings = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/admin/tools")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
+          <img src={logo} alt="Brototype" className="h-10" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-3xl font-bold text-foreground">Admin Settings</h1>

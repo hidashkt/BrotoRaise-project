@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "@/assets/brototype-logo.webp";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -87,9 +88,7 @@ const Auth = () => {
           <div className="hidden md:flex flex-col justify-center space-y-6 animate-fade-in">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/10 rounded-2xl backdrop-blur-sm">
-                  <GraduationCap className="h-12 w-12 text-primary" />
-                </div>
+                <img src={logo} alt="Brototype" className="h-16" />
                 <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   BrotoRaise
                 </h1>
