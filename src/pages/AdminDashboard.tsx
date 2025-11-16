@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ComplaintCard } from "@/components/ComplaintCard";
-import { LogOut, Filter, Settings } from "lucide-react";
+import { Filter, Settings } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -139,13 +139,9 @@ const AdminDashboard = () => {
           </div>
           <div className="flex gap-2">
             <ThemeToggle />
-            <Button variant="outline" onClick={() => navigate("/admin/tools")}>
+            <Button variant="outline" onClick={() => navigate("/admin/settings")}>
               <Settings className="mr-2 h-4 w-4" />
-              Admin Tools
-            </Button>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+              Settings
             </Button>
           </div>
         </div>
